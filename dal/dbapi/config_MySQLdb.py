@@ -2,9 +2,6 @@ import MySQLdb
 import datetime
 import math
 
-# use backslash escapes?
-use_bsesc = True
-
 # special quote/escape chracters (if any)
 quote_chars = ["`"]
 escape_chars = ['\\']
