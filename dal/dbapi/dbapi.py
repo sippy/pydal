@@ -358,7 +358,7 @@ class Cursor(object):
         params = dbtime.dtsubnative(self._mwrapper.dtmod, self._driver, params)
         pstyle1 = self._mwrapper.paramstyle
         pstyle2 = self._driver.paramstyle
-        return paramstyles.paramstyle_convert(pstyle1, pstyle2, query, params)
+        return paramstyles.convert(pstyle1, pstyle2, query, params)
 
 # public module functions ****************************************
 
