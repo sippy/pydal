@@ -23,12 +23,6 @@ __revision__ = 0.1
 import dbtime
 import paramstyles
 
-try:
-    import db_row
-except ImportError:
-    have_db_row = False
-
-
 class MWrapper(object):
     """DBAPI2 driver wrapper"""
     def __init__(self, driver, drivername):
@@ -93,6 +87,9 @@ class MWrapper(object):
         return self.__use_db_row
 
     def __setUseDbRow(self, use_db_row):
+        if use_db_row:
+            import db_row
+            globals()['db_row'] = db_row
         self.__use_db_row = use_db_row
 
     use_db_row = property(__getUseDbRow, __setUseDbRow)
@@ -228,15 +225,15 @@ class Cursor(object):
         self.__use_db_row = self._mwrapper.use_db_row
 
     def __getDbRow(self):
-        """Return value of use_db_row."""
+        """Return value of use_db_row for cursor."""
         return self.__use_db_row
 
     def __setDbRow(self, use_db_row):
-        """Set value of use_db_row."""
+        """Set value of use_db_row for cursor."""
         if use_db_row:
-            self.__use_db_row = True
-        else:
-            self.__use_db_row = False
+            import db_row
+            globals()['db_row'] = db_row
+        self.__use_db_row = use_db_row
 
     use_db_row = property(__getDbRow, __setDbRow)
 
