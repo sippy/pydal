@@ -6,7 +6,6 @@
 ###
 ### 2004-08-30
 ###
-###
 ###############################################################################
 
 import string
@@ -48,7 +47,7 @@ PLACEHOLDER_TOKENS = {
 
 
 ##
-## This dictionary is used to lookup regular expressions for matching placeholders
+## This dictionary is used to look-up regular expressions for matching placeholders
 ## in a query string for a given paramstyle.
 ##
 PLACEHOLDER_EXPS = {
@@ -59,8 +58,10 @@ PLACEHOLDER_EXPS = {
     'pyformat' : re.compile(r'(%\(\w+\)s)'),
 }
 
+
 ##
-##
+## This dictionary is used to get the correct datastructure to return params in when converting
+## from one paramstyle to another.
 ##
 PARAM_TYPES = {
     'qmark'    : lambda : [],
@@ -261,7 +262,10 @@ def segmentize( string ):
 
 
 ##
+## Universal paramstyle converter.  This is the initial conversion algorithm supplied with PyDAL.
+## It is intended to complete, but may not offer optimal performance in all cases.
 ##
+## --PLB 2004-09-08
 ##
 def paramstyle_to_paramstyle( from_paramstyle, to_paramstyle, query, params ):
     placeholder_exp = PLACEHOLDER_EXPS[from_paramstyle]
@@ -338,6 +342,8 @@ def convert( from_paramstyle, to_paramstyle, query, params ):
 
 ##
 ## Unit Tests
+##
+## Need to move these to the python unit testing framework...
 ##
 if __name__ == '__main__':
     sequence_params = ['a', 'b', 'c', 'd']
