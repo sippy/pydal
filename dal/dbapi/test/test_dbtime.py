@@ -354,9 +354,22 @@ class DtSubNative(unittest.TestCase):
 
     def testPyPyscopg(self):
         dt = datetime.datetime.now()
+        dt_str = str(dt).split('.')[0]
+        # List
         params = [1, 2, 3, dt]
         result = dbtime.dtsubnative('py', psycopg, params)
-        # how do I check this ?
+        ndt_str = str(result[3]).strip("'")
+        self.assert_(dt_str == ndt_str)
+        # Dictionary
+        params = {'f1':'hello', 'f2':dt}
+        result = dbtime.dtsubnative('py', psycopg, params)
+        ndt_str = str(params['f2']).strip("'")
+        self.assert_(dt_str == ndt_str)
+        # List of Dictionaries
+        params = [{'f1':'hello', 'f2':dt}, {'f1':'hello', 'f2':dt}]
+        result = dbtime.dtsubnative('py', psycopg, params)
+        self.assert_(str(result[0]['f2']).strip("'") == dt_str)
+        self.assert_(str(result[1]['f2']).strip("'") == dt_str)
 
 
 if __name__ == '__main__':
