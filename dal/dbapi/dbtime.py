@@ -213,11 +213,11 @@ def dtsubnative(dtpref, dbmod, params):
     """identfies datetime types and subs in driver objects
     
     Usually occurs before paramater conversion
-    Will call either Date, Time, or Time
+    Will call either Date, Time, or Timestamp
     """
     # params could be a list, dictionary, or list of dictionaries.
     def convertdt(param):
-        nparam = None
+        nparam = param
         if dtpref == 'py':
             if type(param) == datetime.time:
                 nparam = dbmod.Time(param.hour, param.minute, param.second)
@@ -227,7 +227,7 @@ def dtsubnative(dtpref, dbmod, params):
             elif type(param) == datetime.date:
                 nparam = dbmod.Date(param.year, param.month, param.day)
             else:
-                # Not a datetime type
+                # not a datetime field
                 pass
         elif dtpref == 'mx':
             if type(param) == mx.DateTime.DateTimeDeltaType:
@@ -238,14 +238,11 @@ def dtsubnative(dtpref, dbmod, params):
                 nparam = dbmod.Timestamp(param.year, param.month, param.day,
                                        param.hour, param.minute, sec)
             else:
-                # Not a datetime type
+                # not a datetime field
                 pass
         else:
             raise ValueError, 'dbpref value not known.'
-        if nparam is not None:
-            return nparam
-        else:
-            return param
+        return nparam
 
     def convert_dparams(dparams):
         # Convert dictionary of parameters.
@@ -261,6 +258,8 @@ def dtsubnative(dtpref, dbmod, params):
                 params[key] = convert_dparams(params[key])
             else:
                 params[key] = convertdt(params[key])
+    else:
+        raise ValueError, 'params should be list or dict.'
     return params
 
 def native2pref(nativedt, pref, dt_type=None, conv_func=None):
