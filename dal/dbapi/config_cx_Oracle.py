@@ -1,7 +1,7 @@
 import cx_Oracle
 import datetime
 
-def convertdt(moddt, field_desc):
+def convertdt(moddt, field_desc, pref=None):
     """convert Oracle DateTime to Python datetime"""
     year = moddt.year
     month = moddt.month

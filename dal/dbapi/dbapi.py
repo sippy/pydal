@@ -223,6 +223,7 @@ class Cursor(object):
         self._datetimeo = True # This will also go away.
         self.dtmod = self._mwrapper.dtmod # Takes defualt from wrapper.
         self.__use_db_row = self._mwrapper.use_db_row
+        self.__paramstyle = self._mwrapper.paramstyle
 
     def __getDbRow(self):
         """Return value of use_db_row for cursor."""
@@ -236,6 +237,17 @@ class Cursor(object):
         self.__use_db_row = use_db_row
 
     use_db_row = property(__getDbRow, __setDbRow)
+
+    def __getParamstyle(self):
+        """Return value of paramstyle for cursor."""
+        return self.__paramstyle
+
+    def __setParamstyle(self, paramstyle):
+        """Set value of paramstyle for cursor."""
+        self.__paramstyle = paramstyle
+
+    paramstyle = property(__getParamstyle, __setParamstyle)
+
 
     def __getDescription(self):
         return self._native_cs.description
@@ -268,8 +280,6 @@ class Cursor(object):
             return self._native_cs.execute(query)
         else:
             newquery, newparams = self.__formatQueryParams(query, params)
-            ##print newquery
-            ##print newparams
             return self._native_cs.execute(newquery, newparams)
 
     def executemany(self, query, params=None):
@@ -305,12 +315,12 @@ class Cursor(object):
         results = native_cs.fetchmany(size)
         # Do not format None.
         # Do not format if formatting not required.
-        if results != None and self.__doFormatResults():
+        if results != [] and self.__doFormatResults():
             new_results = self.__formatResults(results)
-        elif results != None:
+        elif results != []:
             new_results = results
         else:
-            new_results = None
+            new_results = [] 
         return new_results
 
     def close(self):
@@ -387,7 +397,7 @@ class Cursor(object):
     def __formatQueryParams(self, query, params):
         # transform datetime args to native module objects
         params = dbtime.dtsubnative(self._mwrapper.dtmod, self._driver, params)
-        pstyle1 = self._mwrapper.paramstyle
+        pstyle1 = self.paramstyle
         pstyle2 = self._driver.paramstyle
         ##print pstyle1, pstyle2
         return paramstyles.convert(pstyle1, pstyle2, query, params)
