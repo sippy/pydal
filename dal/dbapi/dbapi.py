@@ -36,7 +36,7 @@ class MWrapper(object):
         self._driver = driver
         self._drivername = drivername
         # Remove backslash if it exists from paramstyle config.
-        if '\\' in paramstyle.ESCAPE_CHARS:
+        if '\\' in paramstyles.ESCAPE_CHARS:
             paramstyles.ESCAPE_CHARS.remove('\\')
         # Check for driver specific configuration.
         try:
@@ -49,8 +49,6 @@ class MWrapper(object):
                 paramstyles.ESCAPE_CHARS.extend(self._config.escape_chars)
             if hasattr(self._config, 'quote_chars'):
                 paramstyles.QUOTE_CHARS.extend(self._config.quote_chars)
-            print paramstyles.ESCAPE_CHARS
-            print paramstyles.QUOTE_CHARS
         except ImportError:
             self._config = False
         self.__use_db_row = False # default
