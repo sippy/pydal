@@ -4,6 +4,16 @@ PyDal is a database abstraction layer for Python.  It provides a DBAPI 2.0 wrapp
 
 It should work with any driver that is DBAPI 2.0 compliant.  For those that are not, adaptations are handled in configuration files.  Check out config_Example.py for examples.
 
+USAGE
+Look at the documentation for the dbapi.py module for a usage example.  A very simple example works like this.
+
+import dal
+drv = dal.wrapdriver('psycopg')
+cn = drv.connect(database='mydb')
+cs = cn.cursor()
+cs.execute('select * form mytable')
+result = cs.fetchall()
+
 AUTHORS
 
 PyDAL is the creation of Randall Smith <randall@tnr.cc> and Peter Buschman <plb@iotk.com>
