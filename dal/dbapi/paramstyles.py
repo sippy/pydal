@@ -4,7 +4,7 @@
 ###
 ### Peter L. Buschman <plb@iotk.com>
 ###
-### 2004-08-25
+### 2004-08-30
 ###
 ###
 ###############################################################################
@@ -60,6 +60,29 @@ PLACEHOLDER_EXPS = {
 }
 
 ##
+##
+##
+PARAM_TYPES = {
+    'qmark'    : lambda : [],
+    'numeric'  : lambda : [],
+    'named'    : lambda : {},
+    'format'   : lambda : [],
+    'pyformat' : lambda : {},
+}
+
+
+##
+## Add a parameter to a sequence or dictionary of parameters.
+##
+def param_add( param_num, param_name, param, params ):
+    try:
+        params.append(param)
+    except AttributeError:
+        params[param_name] = param
+    return params
+
+
+##
 ## This dictionary is used to lookup regular expressions for matching the parameter
 ## name contained within the placeholder of a named paramstyle.  This is currently
 ## just named and pyformat.
@@ -71,15 +94,39 @@ PARAMNAME_EXPS = {
 
 
 ##
+## Parameter name generators.
+##
+PARAMNAME_GENS = {
+    'qmark'    : lambda param_num, placeholder : 'param%d' % (param_num),
+    'numeric'  : lambda param_num, placeholder : 'param%d' % (param_num),
+    'named'    : lambda param_num, placeholder : PARAMNAME_EXPS['named'].findall(placeholder)[0],
+    'format'   : lambda param_num, placeholder : 'param%d' % (param_num),
+    'pyformat' : lambda param_num, placeholder : PARAMNAME_EXPS['pyformat'].findall(placeholder)[0],
+}
+
+
+##
+## Parameter value generators.
+##
+PARAMVALUE_GENS = {
+    'qmark'    : lambda param_num, param_name, params : params[param_num - 1],
+    'numeric'  : lambda param_num, param_name, params : params[param_num - 1],
+    'named'    : lambda param_num, param_name, params : params[param_name],
+    'format'   : lambda param_num, param_name, params : params[param_num - 1],
+    'pyformat' : lambda param_num, param_name, params : params[param_name],
+}
+
+
+##
 ## This dictionary contains lambda functions that return the appropriate replacement
 ## string given the parameter's sequence number.
 ##
 PLACEHOLDER_SUBS = {
-    'qmark'     : lambda param_number : '?',
-    'numeric'   : lambda param_number : ':%d' % (param_number),
-    'named'     : lambda param_number : ':param%d' % (param_number),
-    'format'    : lambda param_number : '%s',
-    'pyformat'  : lambda param_number : '%%(param%d)s' % (param_number),
+    'qmark'     : lambda param_num, param_name : '?',
+    'numeric'   : lambda param_num, param_name : ':%d' % (param_num),
+    'named'     : lambda param_num, param_name : ':%s' % (param_name),
+    'format'    : lambda param_num, param_name : '%s',
+    'pyformat'  : lambda param_num, param_name : '%%(%s)s' % (param_name),
 }
 
 
@@ -94,37 +141,37 @@ PLACEHOLDER_SUBS = {
 CONVERSION_MATRIX = {
     'qmark' : {
         'qmark'    : lambda query, params : (query, params),
-        'numeric'  : lambda query, params : sequence_to_sequence( 'qmark', 'numeric', query, params ),
-        'named'    : lambda query, params : sequence_to_dict( 'qmark', 'named', query, params ),
-        'format'   : lambda query, params : sequence_to_sequence( 'qmark', 'format', query, params ),
-        'pyformat' : lambda query, params : sequence_to_dict( 'qmark', 'pyformat', query, params ),
+        'numeric'  : lambda query, params : paramstyle_to_paramstyle( 'qmark', 'numeric', query, params ),
+        'named'    : lambda query, params : paramstyle_to_paramstyle( 'qmark', 'named', query, params ),
+        'format'   : lambda query, params : paramstyle_to_paramstyle( 'qmark', 'format', query, params ),
+        'pyformat' : lambda query, params : paramstyle_to_paramstyle( 'qmark', 'pyformat', query, params ),
     },
     'numeric' : {
-        'qmark'    : lambda query, params : sequence_to_sequence( 'numeric', 'qmark', query, params ),
+        'qmark'    : lambda query, params : paramstyle_to_paramstyle( 'numeric', 'qmark', query, params ),
         'numeric'  : lambda query, params : (query, params),
-        'named'    : lambda query, params : sequence_to_dict( 'numeric', 'named', query, params ),
-        'format'   : lambda query, params : sequence_to_sequence( 'numeric', 'format', query, params ),
-        'pyformat' : lambda query, params : sequence_to_dict( 'numeric', 'pyformat', query, params ),
+        'named'    : lambda query, params : paramstyle_to_paramstyle( 'numeric', 'named', query, params ),
+        'format'   : lambda query, params : paramstyle_to_paramstyle( 'numeric', 'format', query, params ),
+        'pyformat' : lambda query, params : paramstyle_to_paramstyle( 'numeric', 'pyformat', query, params ),
     },
     'named' : {
-        'qmark'    : lambda query, params : dict_to_sequence( 'named', 'qmark', query, params ),
-        'numeric'  : lambda query, params : dict_to_sequence( 'named', 'numeric', query, params ),
+        'qmark'    : lambda query, params : paramstyle_to_paramstyle( 'named', 'qmark', query, params ),
+        'numeric'  : lambda query, params : paramstyle_to_paramstyle( 'named', 'numeric', query, params ),
         'named'    : lambda query, params : (query, params),
-        'format'   : lambda query, params : dict_to_sequence( 'named', 'format', query, params ),
-        'pyformat' : lambda query, params : dict_to_dict( 'named', 'pyformat', query, params ),
+        'format'   : lambda query, params : paramstyle_to_paramstyle( 'named', 'format', query, params ),
+        'pyformat' : lambda query, params : paramstyle_to_paramstyle( 'named', 'pyformat', query, params ),
     },
     'format' : {
-        'qmark'    : lambda query, params : sequence_to_sequence( 'format', 'qmark', query, params ),
-        'numeric'  : lambda query, params : sequence_to_sequence( 'format', 'numeric', query, params ),
-        'named'    : lambda query, params : sequence_to_dict( 'format', 'named', query, params ),
+        'qmark'    : lambda query, params : paramstyle_to_paramstyle( 'format', 'qmark', query, params ),
+        'numeric'  : lambda query, params : paramstyle_to_paramstyle( 'format', 'numeric', query, params ),
+        'named'    : lambda query, params : paramstyle_to_paramstyle( 'format', 'named', query, params ),
         'format'   : lambda query, params : (query, params),
-        'pyformat' : lambda query, params : sequence_to_dict( 'format', 'pyformat', query, params ),
+        'pyformat' : lambda query, params : paramstyle_to_paramstyle( 'format', 'pyformat', query, params ),
     },
     'pyformat' : {
-        'qmark'    : lambda query, params : dict_to_sequence( 'pyformat', 'qmark', query, params ),
-        'numeric'  : lambda query, params : dict_to_sequence( 'pyformat', 'numeric', query, params ),
-        'named'    : lambda query, params : dict_to_dict( 'pyformat', 'named', query, params ),
-        'format'   : lambda query, params : dict_to_sequence( 'pyformat', 'format', query, params ),
+        'qmark'    : lambda query, params : paramstyle_to_paramstyle( 'pyformat', 'qmark', query, params ),
+        'numeric'  : lambda query, params : paramstyle_to_paramstyle( 'pyformat', 'numeric', query, params ),
+        'named'    : lambda query, params : paramstyle_to_paramstyle( 'pyformat', 'named', query, params ),
+        'format'   : lambda query, params : paramstyle_to_paramstyle( 'pyformat', 'format', query, params ),
         'pyformat' : lambda query, params : (query, params),
     },
 }
@@ -151,7 +198,7 @@ def escaped( string, pos ):
 ## Return True if the string is quoted.
 ##
 def quoted( string ):
-    if string[0] in QUOTE_CHARS and string[-1] in QUOTE_CHARS:
+    if string[0] in QUOTE_CHARS and string[-1] == string[0]:
         return True
     else:
         return False
@@ -214,14 +261,16 @@ def segmentize( string ):
 
 
 ##
-## Convert from a sequence-based paramstyle to another sequence-based paramstyle.
 ##
-def sequence_to_sequence( from_paramstyle, to_paramstyle, query, params ):
+##
+def paramstyle_to_paramstyle( from_paramstyle, to_paramstyle, query, params ):
     placeholder_exp = PLACEHOLDER_EXPS[from_paramstyle]
     placeholder_sub = PLACEHOLDER_SUBS[to_paramstyle]
+    paramname_gen   = PARAMNAME_GENS[from_paramstyle]
+    paramvalue_gen  = PARAMVALUE_GENS[from_paramstyle]
     new_query = ''
     segments = segmentize(query)
-    new_params = params
+    new_params = PARAM_TYPES[to_paramstyle]()
     param_num = 0
     for segment in segments:
         #
@@ -241,18 +290,22 @@ def sequence_to_sequence( from_paramstyle, to_paramstyle, query, params ):
                 #
                 while match != None:
                     new_query += segment[pos:match.start()]
+                    placeholder = segment[match.start():match.end()]
                     #
                     # Ignore the placeholder if it is escaped...
                     #
                     if escaped( segment, match.start() ):
-                        new_query += segment[match.start():match.end()]
+                        new_query += placeholder
                     else:
                         #
                         # ...otherwise replace it.
                         #
                         param_num += 1
-                        new_placeholder = placeholder_sub(param_num)
+                        param_name  = paramname_gen( param_num, placeholder )
+                        param_value = paramvalue_gen( param_num, param_name, params )
+                        new_placeholder = placeholder_sub( param_num, param_name )
                         new_query += new_placeholder
+                        new_params = param_add( param_num, param_name, param_value, new_params )
                     pos = match.end()
                     match = placeholder_exp.search(segment, pos)
                 #
@@ -270,71 +323,16 @@ def sequence_to_sequence( from_paramstyle, to_paramstyle, query, params ):
 
 
 ##
-## Convert from a sequence-based paramstyle to a dictionary-based paramstyle.
-##
-def sequence_to_dict( from_paramstyle, to_paramstyle, query, params ):
-    placeholder_exp = PLACEHOLDER_EXPS[from_paramstyle]
-    placeholder_sub = PLACEHOLDER_SUBS[to_paramstyle]
-    new_query = query
-    new_params = {}
-    param_num = 0
-    for placeholder in placeholder_exp.findall(query):
-        param_num += 1
-        param_name = 'param%d' % (param_num)
-        new_placeholder = placeholder_sub(param_num)
-        new_query = string.replace(new_query, placeholder, new_placeholder, 1)
-        new_params[param_name] = params[param_num-1]
-    return new_query, new_params
-
-
-##
-## Convert from a dictionary-based paramstyle to a sequence-based paramstyle.
-##
-def dict_to_sequence( from_paramstyle, to_paramstyle, query, params ):
-    placeholder_exp = PLACEHOLDER_EXPS[from_paramstyle]
-    placeholder_sub = PLACEHOLDER_SUBS[to_paramstyle]
-    paramname_exp   = PARAMNAME_EXPS[from_paramstyle]
-    new_query = query
-    new_params = []
-    param_num = 0
-    for placeholder in placeholder_exp.findall(query):
-        param_num += 1
-        param_name = paramname_exp.findall(placeholder)[0]
-        new_placeholder = placeholder_sub(param_num)
-        new_query = string.replace(new_query, placeholder, new_placeholder, 1)
-        new_params.append(params[param_name])
-    return new_query, new_params
-
-
-##
-## Convert from a dictionary-based paramstyle to a dictionary-based paramstyle.
-##
-def dict_to_dict( from_paramstyle, to_paramstyle, query, params ):
-    placeholder_exp = PLACEHOLDER_EXPS[from_paramstyle]
-    placeholder_sub = PLACEHOLDER_SUBS[to_paramstyle]
-    paramname_exp   = PARAMNAME_EXPS[from_paramstyle]
-    new_query = query
-    new_params = params
-    param_num = 0
-    for placeholder in placeholder_exp.findall(query):
-        param_num += 1
-        param_name = paramname_exp.findall(placeholder)[0]
-        new_placeholder = placeholder_sub(param_num)
-        new_query = string.replace(new_query, placeholder, new_placeholder, 1)
-    return new_query, new_params
-
-
-##
 ## Convert from any paramstyle to any other paramstyle.
 ##
-def paramstyle_convert( from_paramstyle, to_paramstyle, query, params ):
+def convert( from_paramstyle, to_paramstyle, query, params ):
 
     try:
-        convert = CONVERSION_MATRIX[from_paramstyle][to_paramstyle]
+        convert_function = CONVERSION_MATRIX[from_paramstyle][to_paramstyle]
     except KeyError:
         raise NotImplementedError, 'Unsupported paramstyle conversion: %s to %s' % (from_paramstyle, to_paramstyle)
 
-    new_query, new_params = convert(query, params)
+    new_query, new_params = convert_function(query, params)
 
     return new_query, new_params
 
@@ -356,69 +354,11 @@ if __name__ == '__main__':
         'format'   : [ 'SELECT * FROM %s WHERE %s > %s OR %s IS NOT NULL', sequence_params ],
         'pyformat' : [ 'SELECT * FROM %(foo)s WHERE %(bar)s > %(baz)s OR %(quux)s IS NOT NULL', dict_params ],
     }
-    print ''
-    print '[ PLACEHOLDER MATCH TESTS ]'
-    print ''
-    for paramstyle in tests.keys():
-        query        = tests[paramstyle][0]
-        regexp       = PLACEHOLDER_EXPS[paramstyle]
-        print regexp.findall(query)
     indent = 4
     width = 16
     print ''
-    print '[ TOKEN TO TOKEN TESTS ]'
-    print ''
-    for from_paramstyle in PARAMSTYLES['token']:
-        from_query  = tests[from_paramstyle][0]
-        from_params = tests[from_paramstyle][1]
-        print "%s[ %s ] '%s' '%s'" % ( ' ' * indent, from_paramstyle, from_query, from_params )
-        print ''
-        for to_paramstyle in PARAMSTYLES['token']:
-            to_query, to_params = sequence_to_sequence(from_paramstyle, to_paramstyle, from_query, from_params)
-            print '%s%s%s: %s' % ( ' ' * indent * 2, to_paramstyle,  '.' * (width + indent - len(to_paramstyle)), to_query  )
-            print '%s%s: %s' % ( ' ' * indent * 2, ' ' * (width + indent), to_params )
-        print ''
-    print ''
-    print '[ SEQUENCE TO SEQUENCE TESTS ]'
-    print ''
-    for from_paramstyle in PARAMSTYLES['sequence']:
-        from_query  = tests[from_paramstyle][0]
-        from_params = tests[from_paramstyle][1]
-        print "%s[ %s ] '%s' '%s'" % ( ' ' * indent, from_paramstyle, from_query, from_params )
-        print ''
-        for to_paramstyle in PARAMSTYLES['sequence']:
-            to_query, to_params = sequence_to_sequence(from_paramstyle, to_paramstyle, from_query, from_params)
-            print '%s%s%s: %s' % ( ' ' * indent * 2, to_paramstyle,  '.' * (width + indent - len(to_paramstyle)), to_query  )
-            print '%s%s: %s' % ( ' ' * indent * 2, ' ' * (width + indent), to_params )
-        print ''
-    print ''
-    print '[ SEQUENCE TO DICT TESTS ]'
-    print ''
-    for from_paramstyle in PARAMSTYLES['sequence']:
-        from_query  = tests[from_paramstyle][0]
-        from_params = tests[from_paramstyle][1]
-        print "%s[ %s ] '%s' '%s'" % ( ' ' * indent, from_paramstyle, from_query, from_params )
-        print ''
-        for to_paramstyle in PARAMSTYLES['dict']:
-            to_query, to_params = sequence_to_dict(from_paramstyle, to_paramstyle, from_query, from_params)
-            print '%s%s%s: %s' % ( ' ' * indent * 2, to_paramstyle,  '.' * (width + indent - len(to_paramstyle)), to_query  )
-            print '%s%s: %s' % ( ' ' * indent * 2, ' ' * (width + indent), to_params )
-        print ''
-    print ''
-    print '[ DICT TO SEQUENCE TESTS ]'
-    print ''
-    for from_paramstyle in PARAMSTYLES['dict']:
-        from_query  = tests[from_paramstyle][0]
-        from_params = tests[from_paramstyle][1]
-        print "%s[ %s ] '%s' '%s'" % ( ' ' * indent, from_paramstyle, from_query, from_params )
-        print ''
-        for to_paramstyle in PARAMSTYLES['sequence']:
-            to_query, to_params = dict_to_sequence(from_paramstyle, to_paramstyle, from_query, from_params)
-            print '%s%s%s: %s' % ( ' ' * indent * 2, to_paramstyle,  '.' * (width + indent - len(to_paramstyle)), to_query  )
-            print '%s%s: %s' % ( ' ' * indent * 2, ' ' * (width + indent), to_params )
-        print ''
-    print ''
     print '[ PARAMSTYLE TRANSLATIONS ]'
+    print ''
     for from_paramstyle in PARAMSTYLES['all']:
         query  = tests[from_paramstyle][0]
         params = tests[from_paramstyle][1]
@@ -431,7 +371,7 @@ if __name__ == '__main__':
         print '%s%s%s: %s' % (' ' * indent, label, '.' * (width + indent - len(label)), from_paramstyle)
         print ''
         for to_paramstyle in PARAMSTYLES['all']:
-            converted_query, converted_params = paramstyle_convert(from_paramstyle, to_paramstyle, query, params)
+            converted_query, converted_params = convert(from_paramstyle, to_paramstyle, query, params)
             label = '%s_query' % (to_paramstyle)
             print '%s%s%s: %s' % (' ' * indent * 2, label, '.' * (width - len(label)), converted_query)
             label = '%s_params' % (to_paramstyle)
