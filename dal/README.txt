@@ -5,6 +5,11 @@ PyDal is a database abstraction layer for Python.  It provides a DBAPI 2.0 wrapp
 
 It should work with any driver that is DBAPI 2.0 compliant.  For those that are not, adaptations are handled in configuration files.  Check out config_Example.py for examples.
 
+INSTALL
+=======
+
+To work, it just needs to be in your Python Path.  A good place for it is your site-packages directory.
+
 USAGE
 =====
 
