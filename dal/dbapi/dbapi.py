@@ -237,13 +237,39 @@ class Cursor(object):
 
     use_db_row = property(__getDbRow, __setDbRow)
 
+    def __getDescription(self):
+        return self._native_cs.description
+
+    description = property(__getDescription)
+    
+    def __getRowCount(self):
+        return self._native_cs.rowcount
+
+    rowcount = property(__getRowCount)
+
+    def __getArraySize(self):
+        return self._native_cs.arraysize
+
+    def __setArraySize(self, new_array_size):
+        self._native_cs.arraysize = new_array_size 
+
+    arraysize = property(__getArraySize, __setArraySize)
+
+    def setinputsizes(self, sizes):
+        """Do Nothing"""
+        pass
+
+    def setoutputsize(self, size, column=None):
+        """Do Nothing"""
+        pass
+
     def execute(self, query, params=None):
         if params == None:
             return self._native_cs.execute(query)
         else:
             newquery, newparams = self.__formatQueryParams(query, params)
-            print newquery
-            print newparams
+            ##print newquery
+            ##print newparams
             return self._native_cs.execute(newquery, newparams)
 
     def executemany(self, query, params=None):
@@ -363,7 +389,7 @@ class Cursor(object):
         params = dbtime.dtsubnative(self._mwrapper.dtmod, self._driver, params)
         pstyle1 = self._mwrapper.paramstyle
         pstyle2 = self._driver.paramstyle
-        print pstyle1, pstyle2
+        ##print pstyle1, pstyle2
         return paramstyles.convert(pstyle1, pstyle2, query, params)
 
 # public module functions ****************************************
