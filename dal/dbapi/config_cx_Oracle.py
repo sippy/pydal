@@ -1,9 +1,6 @@
 import cx_Oracle
 import datetime
 
-# use backslash escapes?
-use_bsesc = False
-
 def convertdt(moddt, field_desc):
     """convert Oracle DateTime to Python datetime"""
     year = moddt.year
