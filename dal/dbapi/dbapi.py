@@ -35,12 +35,22 @@ class MWrapper(object):
         object.__init__(self)
         self._driver = driver
         self._drivername = drivername
+        # Remove backslash if it exists from paramstyle config.
+        if '\\' in paramstyle.ESCAPE_CHARS:
+            paramstyles.ESCAPE_CHARS.remove('\\')
         # Check for driver specific configuration.
         try:
             self._config = __import__('config_' + drivername, globals())
             # Run init1 in config.
             if hasattr(self._config, 'init1'):
                 self._config.init1(self)
+            # Set up escape and quote characters.
+            if hasattr(self._config, 'escape_chars'):
+                paramstyles.ESCAPE_CHARS.extend(self._config.escape_chars)
+            if hasattr(self._config, 'quote_chars'):
+                paramstyles.QUOTE_CHARS.extend(self._config.quote_chars)
+            print paramstyles.ESCAPE_CHARS
+            print paramstyles.QUOTE_CHARS
         except ImportError:
             self._config = False
         self.__use_db_row = False # default
@@ -182,7 +192,7 @@ class MWrapper(object):
         return self._driver.Binary(string)
 
     def connect(self, *args, **kwargs):
-        """Returns connection object."""
+        """Return connection object."""
         return Connection(self, *args, **kwargs)
 
 class Connection(object):
@@ -192,12 +202,18 @@ class Connection(object):
         self._mwrapper = mwrapper
         self._native_cn = mwrapper._driver.connect(*args, **kwargs)
 
-    def cursor(self):
-        """Returns a wrapped cursor."""
-        return Cursor(self, self._native_cn)
+    def close(self):
+        return self._native_cn.close()
 
-    def __getattr__ (self, name):
-        return getattr(self._native_cn, name)
+    def commit(self):
+        return self._native_cn.commit()
+
+    def rollback(self):
+        return self._native_cn.rollback()
+
+    def cursor(self):
+        """Return a wrapped cursor."""
+        return Cursor(self, self._native_cn)
 
 class Cursor(object):
     """Wrapper for cursor object."""
@@ -214,11 +230,11 @@ class Cursor(object):
         self.__use_db_row = self._mwrapper.use_db_row
 
     def __getDbRow(self):
-        """Returns value of use_db_row."""
+        """Return value of use_db_row."""
         return self.__use_db_row
 
     def __setDbRow(self, use_db_row):
-        """Sets value of use_db_row."""
+        """Set value of use_db_row."""
         if use_db_row:
             self.__use_db_row = True
         else:
@@ -298,7 +314,7 @@ class Cursor(object):
             return True
 
     def __formatResults(self, results):
-        """Formats result set before returning."""
+        """Format result set before returning."""
         if type(results) == tuple:
             results = list(results)
         desc = self._native_cs.description
@@ -345,12 +361,6 @@ class Cursor(object):
     def __formatQueryParams(self, query, params):
         # transform datetime args to native module objects
         params = dbtime.dtsubnative(self._mwrapper.dtmod, self._driver, params)
-        # which chars not to consider for substitution
-        # use backslash escapes?
-        ##use_bsesc = False
-        # Are we using backslash escaping?
-        ##if hasattr(self._mwrapper._config, 'use_bsesc'):
-            ##use_bsesc = self._mwrapper._config.use_bsesc
         pstyle1 = self._mwrapper.paramstyle
         pstyle2 = self._driver.paramstyle
         return paramstyles.paramstyle_convert(pstyle1, pstyle2, query, params)
@@ -358,11 +368,11 @@ class Cursor(object):
 # public module functions ****************************************
 
 def connect(*args, **kwargs):
-    """Returns Connection wrapper object."""
+    """Return Connection wrapper object."""
     return Connection(*args, **kwargs)
 
 def wrapdriver(driver_name, driver_alias=None):
-    """wrapdriver(driver_name, driver_alias) -> driver wrapper object."""
+    """Wrap native driver."""
     if driver_alias == None:
         driver_alias = driver_name
     try:
