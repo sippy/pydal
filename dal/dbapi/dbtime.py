@@ -215,37 +215,52 @@ def dtsubnative(dtpref, dbmod, params):
     Usually occurs before paramater conversion
     Will call either Date, Time, or Time
     """
-    if dtpref == 'py':
-        for pcnt in xrange(len(params)):
-            param = params[pcnt]
+    # params could be a list, dictionary, or list of dictionaries.
+    def convertdt(param):
+        nparam = None
+        if dtpref == 'py':
             if type(param) == datetime.time:
                 nparam = dbmod.Time(param.hour, param.minute, param.second)
-                params[pcnt] = nparam
             elif type(param) == datetime.datetime:
                 nparam = dbmod.Timestamp(param.year, param.month, param.day,
                                        param.hour, param.minute, param.second)
-                params[pcnt] = nparam
             elif type(param) == datetime.date:
                 nparam = dbmod.Date(param.year, param.month, param.day)
-                params[pcnt] = nparam
             else:
-                # not a datetime field
+                # Not a datetime type
                 pass
-    elif dtpref == 'mx':
-        for pcnt in xrange(len(params)):
-            param = params[pcnt]
+        elif dtpref == 'mx':
             if type(param) == mx.DateTime.DateTimeDeltaType:
                 sec = int(math.modf(param.second)[0])
                 nparam = dbmod.Time(param.hour, param.minute, sec)
-                params[pcnt] = nparam
             elif type(param) == mx.DateTime.DateTimeType:
                 sec = int(math.modf(param.second)[0])
                 nparam = dbmod.Timestamp(param.year, param.month, param.day,
                                        param.hour, param.minute, sec)
-                params[pcnt] = nparam
             else:
-                # not a datetime field
+                # Not a datetime type
                 pass
+        else:
+            raise ValueError, 'dbpref value not known.'
+        if nparam is not None:
+            return nparam
+        else:
+            return param
+
+    def convert_dparams(dparams):
+        # Convert dictionary of parameters.
+        for key, value in dparams.items():
+            dparams[key] = convertdt(value)
+        return dparams
+
+    if type(params) == dict:
+        params = convert_dparams(params)
+    elif type(params) == list:
+        for key in xrange(len(params)):
+            if type(params[key]) == dict:
+                params[key] = convert_dparams(params[key])
+            else:
+                params[key] = convertdt(params[key])
     return params
 
 def native2pref(nativedt, pref, dt_type=None, conv_func=None):
