@@ -242,6 +242,8 @@ class Cursor(object):
             return self._native_cs.execute(query)
         else:
             newquery, newparams = self.__formatQueryParams(query, params)
+            print newquery
+            print newparams
             return self._native_cs.execute(newquery, newparams)
 
     def executemany(self, query, params=None):
@@ -284,6 +286,9 @@ class Cursor(object):
         else:
             new_results = None
         return new_results
+
+    def close(self):
+        return self._native_cs.close()
 
     def fetchall(self):
         """Like DBAPI2."""
@@ -358,6 +363,7 @@ class Cursor(object):
         params = dbtime.dtsubnative(self._mwrapper.dtmod, self._driver, params)
         pstyle1 = self._mwrapper.paramstyle
         pstyle2 = self._driver.paramstyle
+        print pstyle1, pstyle2
         return paramstyles.convert(pstyle1, pstyle2, query, params)
 
 # public module functions ****************************************
