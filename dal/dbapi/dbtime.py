@@ -20,6 +20,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 __revision__ = '0.1'
 
 import math
+import copy
 
 try:
     import mx.DateTime
@@ -215,6 +216,8 @@ def dtsubnative(dtpref, dbmod, params):
     Usually occurs before paramater conversion
     Will call either Date, Time, or Timestamp
     """
+    # Don't change the original params.
+    params = copy.copy(params)
     # params could be a list, dictionary, or list of dictionaries.
     def convertdt(param):
         nparam = param
