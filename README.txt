@@ -8,7 +8,9 @@ It should work with any driver that is DBAPI 2.0 compliant.  For those that are 
 INSTALL
 =======
 
-To work, it just needs to be in your Python Path.  A good place for it is your site-packages directory.
+You can simply copy dal somewhere in your path or use easy_install to install
+as an egg.
+
 
 USAGE
 =====
@@ -73,6 +75,6 @@ DOWNLOAD
 
 The project is hosted on Sourceforge.
 
-Currently available from CVS:
+Currently available from SVN:
 
-cvs -d:pserver:anonymous@cvs.sf.net:/cvsroot/pydal checkout dal
+svn co http://pydal.svn.sourceforge.net/svnroot/pydal pydal
