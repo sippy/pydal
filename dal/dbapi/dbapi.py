@@ -428,7 +428,7 @@ def wrapdriver(driver_name, driver_alias=None):
     if driver_alias == None:
         driver_alias = driver_name
     try:
-        driver = __import__(driver_name)
+        driver = __import__(driver_name, fromlist = [ '' ])
     except ImportError:
         raise
     # create the MWrapper instance
