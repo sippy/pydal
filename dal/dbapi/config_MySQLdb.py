@@ -8,6 +8,7 @@ escape_chars = ['\\']
 
 def init1(wrapper):
     # MySQLDb does not define DATETIME
-    wrapper._driver.DATETIME = wrapper._driver.DBAPISet(10, 12)
+    if (not hasattr(wrapper._driver, 'DATETIME')):
+        wrapper._driver.DATETIME = wrapper._driver.DBAPISet(10, 12)
 
 # convertdt not needed b/c it used mx.DateTime
