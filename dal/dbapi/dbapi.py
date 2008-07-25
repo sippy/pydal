@@ -34,6 +34,7 @@ result = cs.fetchall()
 __revision__ = 0.1
 
 import dbtime
+import dbexceptions
 import paramstyles
 
 class MWrapper(object):
@@ -76,7 +77,7 @@ class MWrapper(object):
         self.BINARY = self._driver.BINARY
         self.NUMBER = self._driver.NUMBER
         self.ROWID = self._driver.ROWID
-        self.__setExceptions()
+        dbexceptions._setExceptions(self)
         # Run init2 in config.
         if hasattr(self._config, 'init2'):
             self._config.init2(self)
@@ -106,49 +107,6 @@ class MWrapper(object):
         self.__use_db_row = use_db_row
 
     use_db_row = property(__getUseDbRow, __setUseDbRow)
-
-    def __setExceptions(self):
-        # Thanks to Kevin Jacob's 'Virtual Exceptions'
-        # http://mail.python.org/pipermail/db-sig/2003-April/003345.html
-        # is there anything wrong with defining classes here?
-        # Warning shadows the builtin Warning
-        class Warning(StandardError):
-            pass
-        class Error(StandardError):
-            pass
-        class InterfaceError(Error):
-            pass
-        class DatabaseError(Error):
-            pass
-        class DataError(DatabaseError):
-            pass
-        class OperationalError(DatabaseError):
-            pass
-        class IntegrityError(DatabaseError):
-            pass
-        class InternalError(DatabaseError):
-            pass
-        class ProgrammingError(DatabaseError):
-            pass
-        class NotSupportedError(DatabaseError):
-            pass
-
-        dbapi_exceptions = [ 'Warning',
-                             'Error',
-                             'InterfaceError',
-                             'DatabaseError',
-                             'DataError',
-                             'OperationalError',
-                             'IntegrityError',
-                             'InternalError',
-                             'ProgrammingError',
-                             'NotSupportedError' ]
-        driver = self._driver
-        for exception in dbapi_exceptions:
-            setattr(self, exception, locals()[exception])
-            sub_exception    = getattr(driver, exception)
-            dbapi_exception = locals()[exception]
-            sub_exception.__bases__ += (dbapi_exception,)
 
     # All date constructors must be consistent with the date type we have 
     # chosen.
