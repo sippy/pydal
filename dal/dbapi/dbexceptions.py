@@ -42,4 +42,5 @@ def _setExceptions(wrapper):
         sub_exception = getattr(driver, exception)
 #        if (not StandardError in sub_exception.mro()):
 #            sub_exception.__bases__ += (StandardError, )
-        sub_exception.__bases__ += (dbapi_exception,)
+        if (not dbapi_exception in sub_exception.mro()):
+            sub_exception.__bases__ += (dbapi_exception,)
