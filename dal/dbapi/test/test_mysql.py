@@ -23,21 +23,20 @@ class Initialization(unittest.TestCase):
         self.assert_(hasattr(dbmod, 'ROWID'))
 
     def testExceptionPassThru(self):
-        dbmod = self.dbmod
-        driver = dbmod._driver
-        self.assert_(issubclass(driver.Warning, dbmod.Warning))
-        self.assert_(issubclass(driver.Error, dbmod.Error))
-        self.assert_(issubclass(driver.InterfaceError, dbmod.InterfaceError))
-        self.assert_(issubclass(driver.DatabaseError, dbmod.DatabaseError))
-        self.assert_(issubclass(driver.DataError, dbmod.DataError))
+        driver = self.dbmod._driver
+        self.assert_(issubclass(driver.Warning, dal.Warning))
+        self.assert_(issubclass(driver.Error, dal.Error))
+        self.assert_(issubclass(driver.InterfaceError, dal.InterfaceError))
+        self.assert_(issubclass(driver.DatabaseError, dal.DatabaseError))
+        self.assert_(issubclass(driver.DataError, dal.DataError))
         self.assert_(issubclass(driver.OperationalError,
-                                dbmod.OperationalError))
-        self.assert_(issubclass(driver.IntegrityError, dbmod.IntegrityError))
-        self.assert_(issubclass(driver.InternalError, dbmod.InternalError))
+                                dal.OperationalError))
+        self.assert_(issubclass(driver.IntegrityError, dal.IntegrityError))
+        self.assert_(issubclass(driver.InternalError, dal.InternalError))
         self.assert_(issubclass(driver.ProgrammingError,
-                                dbmod.ProgrammingError))
+                                dal.ProgrammingError))
         self.assert_(issubclass(driver.NotSupportedError,
-                                dbmod.NotSupportedError))
+                                dal.NotSupportedError))
 
     # test the date constructors
 
