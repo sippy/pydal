@@ -34,6 +34,9 @@ try:
 except ImportError:
     have_datetime = False
 
+# default tzinfo to use with datetime.datetime objects
+default_tzinfo = None
+
 # mx.DateTime to Python datetime conversion functions
 
 def mx2pydatetime(mxdt):
@@ -48,7 +51,7 @@ def mx2pydatetime(mxdt):
     # floating points can be tricky
     # we are rounding
     msec = int(round(decsec[0] * 1000000))
-    pytd = datetime.datetime(year, month, day, hour, minute, sec, msec)
+    pytd = datetime.datetime(year, month, day, hour, minute, sec, msec, default_tzinfo)
     return pytd
 
 def mx2pytime(mxtd):
@@ -171,7 +174,7 @@ def construct_time(dtpref, hour, minute, second):
 def construct_timestamp(dtpref, year, month, day, hour, minute, second):
     """Creates timestamp object for preferred type."""
     if dtpref == 'py':
-        return datetime.datetime(year, month, day, hour, minute, second)
+        return datetime.datetime(year, month, day, hour, minute, second, 0, default_tzinfo)
     elif dtpref == 'mx':
         return mx.DateTime.DateTime(year, month, day, hour, minute, second)
     else:
@@ -191,7 +194,7 @@ def construct_datefromticks(dtpref, ticks):
 def construct_timefromticks(dtpref, ticks):
     """Creates time object for preferred type and ticks."""
     if dtpref == 'py':
-        return datetime.datetime.fromtimestamp(ticks).time()
+        return datetime.datetime.fromtimestamp(ticks, default_tzinfo).time()
     elif dtpref == 'mx':
         return mx.DateTime.TimeFromTicks(ticks)
     else:
@@ -201,7 +204,7 @@ def construct_timefromticks(dtpref, ticks):
 def construct_timestampfromticks(dtpref, ticks):
     """Creates timestamp object for preferred type and ticks."""
     if dtpref == 'py':
-        return datetime.datetime.fromtimestamp(ticks)
+        return datetime.datetime.fromtimestamp(ticks, default_tzinfo)
     elif dtpref == 'mx':
         return mx.DateTime.localtime(ticks)
     else:
@@ -302,6 +305,9 @@ def native2pref(nativedt, pref, dt_type=None, conv_func=None):
     else:
         # convert
         prefdt = convert2pref(nativedt, nativedt_class, pref)
+    # add tzinfo to datetime.datetime if requested so
+    if default_tzinfo != None and isinstance(prefdt, datetime.datetime) and prefdt.tzinfo == None:
+        prefdt = datetime.datetime(prefdt.year, prefdt.month, prefdt.day, prefdt.hour, prefdt.minute, prefdt.second, prefdt.microsecond, default_tzinfo)
     return prefdt
 
 def dtclass(dto):

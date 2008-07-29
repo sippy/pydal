@@ -21,14 +21,22 @@ dbmod = dal.wrapdriver('psycopg')
 # (Optional) Set the datetime type you want to use.
 # Defaults to Python's datetime module.  Can be 'mx', 'py', or 'native'.
 dbmod.dtmod = 'py' # Python datetime module.
+# (Optional) Add a tzinfo to all returned datetime.datetime objects. 
+# Defaults to None.
+dal.dtime.default_tzinfo = pytz.timezone('UTC') 
 # (Optional) Set the paramstyle. Defaults to qmark.
 dbmod.paramstyle = qmark
-cn = dbmod.connect(host='myhost', database='mydb', user='me', password='mypw')
-cs = cn.cursor()
-query = "Select * from mytable where dtfield = ?"
-params = [dbmod.Date(2004, 7, 1)]
-cs.execute(query, params)
-result = cs.fetchall()
+try:
+    cn = dbmod.connect(host='myhost', database='mydb', user='me', password='mypw')
+    cs = cn.cursor()
+    query = "Select * from mytable where dtfield = ?"
+    params = [dbmod.Date(2004, 7, 1)]
+    cs.execute(query, params)
+    result = cs.fetchall()
+# all DBAPI2 exceptions from the driver are mapped to the corresponding dal 
+# exceptions so it is possible to catch them in a generic way.
+except dal.Error:
+    pass
 """
 
 __revision__ = 0.1
