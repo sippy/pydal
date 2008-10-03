@@ -21,11 +21,7 @@ dbmod = dal.wrapdriver('psycopg')
 # (Optional) Set the datetime type you want to use.
 # Defaults to Python's datetime module.  Can be 'mx', 'py', or 'native'.
 dbmod.dtmod = 'py' # Python datetime module.
-# (Optional) Add a tzinfo to all returned datetime.datetime objects. 
-# Defaults to None.
-dal.dtime.default_tzinfo = pytz.timezone('UTC') 
-# (Optional) Set the paramstyle. Defaults to qmark.
-dbmod.paramstyle = qmark
+dbmod.paramstyle = 'qmark'
 try:
     cn = dbmod.connect(host='myhost', database='mydb', user='me', password='mypw')
     cs = cn.cursor()
@@ -37,6 +33,52 @@ try:
 # exceptions so it is possible to catch them in a generic way.
 except dal.Error:
     pass
+
+
+
+The following example shows how to solve timezone issues. These issues 
+are in fact SQL server and driver specific and unfortunately hasn't been 
+addressed in Python DBAPI spec. Below is the example for MySQLdb.
+
+import dal
+dbmod = dal.wrapdriver('MySQLdb')
+
+# Set local timezone. This gives side effect that all datetime.datetime 
+# objects returned as a result from the query will contain this tzinfo.
+
+dal.dbapi.dbtime.local_tzinfo = pytz.reference.Local
+
+# The following line tells the dal that all datetime.datetime objects
+# returned by driver and containing no tzinfo should be treated as
+# of given timezone. This also assures that all datetime.datetime objects
+# sent as a query parameters has been converted internally to this 
+# timezone before sending to driver.
+
+dal.dbapi.dbtime.server_tzinfo = pytz.timezone('UTC') 
+
+dbmod.dtmod = 'py' # Python datetime module.
+dbmod.paramstyle = 'qmark'
+
+cn = dbmod.connect(host='myhost', db='mydb', user='me', passwd='mypw')
+cs = cn.cursor()
+
+# Make sure that MySQL server will send and receive dates in UTC.
+
+cs.execute("SET time_zone='+00:00'")
+
+# Prepare query parameter.
+# Please note that param object has tzinfo set. This is absolutely 
+# necessary for internal timezone conversions to be correct.
+
+param = datetime.datetime.now(pytz.timezone('America/Vancouver')) 
+
+cs.execute("SELECT TIMESTAMP(?)", [ p ])
+
+# The following line will print the correct current time in your current 
+# local timezone.
+
+print cs.fetchone()[0]
+
 """
 
 __revision__ = 0.1

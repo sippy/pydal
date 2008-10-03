@@ -34,8 +34,9 @@ try:
 except ImportError:
     have_datetime = False
 
-# default tzinfo to use with datetime.datetime objects
-default_tzinfo = None
+# local timezone to make correct 
+local_tzinfo = None
+server_tzinfo = None
 
 # mx.DateTime to Python datetime conversion functions
 
@@ -51,7 +52,7 @@ def mx2pydatetime(mxdt):
     # floating points can be tricky
     # we are rounding
     msec = int(round(decsec[0] * 1000000))
-    pytd = datetime.datetime(year, month, day, hour, minute, sec, msec, default_tzinfo)
+    pytd = datetime.datetime(year, month, day, hour, minute, sec, msec, local_tzinfo)
     return pytd
 
 def mx2pytime(mxtd):
@@ -174,7 +175,7 @@ def construct_time(dtpref, hour, minute, second):
 def construct_timestamp(dtpref, year, month, day, hour, minute, second):
     """Creates timestamp object for preferred type."""
     if dtpref == 'py':
-        return datetime.datetime(year, month, day, hour, minute, second, 0, default_tzinfo)
+        return datetime.datetime(year, month, day, hour, minute, second, 0, local_tzinfo)
     elif dtpref == 'mx':
         return mx.DateTime.DateTime(year, month, day, hour, minute, second)
     else:
@@ -194,7 +195,7 @@ def construct_datefromticks(dtpref, ticks):
 def construct_timefromticks(dtpref, ticks):
     """Creates time object for preferred type and ticks."""
     if dtpref == 'py':
-        return datetime.datetime.fromtimestamp(ticks, default_tzinfo).time()
+        return datetime.datetime.fromtimestamp(ticks, local_tzinfo).time()
     elif dtpref == 'mx':
         return mx.DateTime.TimeFromTicks(ticks)
     else:
@@ -204,7 +205,7 @@ def construct_timefromticks(dtpref, ticks):
 def construct_timestampfromticks(dtpref, ticks):
     """Creates timestamp object for preferred type and ticks."""
     if dtpref == 'py':
-        return datetime.datetime.fromtimestamp(ticks, default_tzinfo)
+        return datetime.datetime.fromtimestamp(ticks, local_tzinfo)
     elif dtpref == 'mx':
         return mx.DateTime.localtime(ticks)
     else:
@@ -228,6 +229,8 @@ def dtsubnative(dtpref, dbmod, params):
             if type(param) == datetime.time:
                 nparam = dbmod.Time(param.hour, param.minute, param.second)
             elif type(param) == datetime.datetime:
+                if param.tzinfo != None and server_tzinfo != None:
+                    param = param.astimezone(server_tzinfo)
                 nparam = dbmod.Timestamp(param.year, param.month, param.day,
                                        param.hour, param.minute, param.second)
             elif type(param) == datetime.date:
@@ -281,6 +284,8 @@ def native2pref(nativedt, pref, dt_type=None, conv_func=None):
             return mx2pydt(dto)
         else:
             raise Exception, 'unknown dto_class/pref combination'
+    if isinstance(nativedt, datetime.datetime) and nativedt.tzinfo == None and server_tzinfo != None and local_tzinfo != None:
+        nativedt = datetime.datetime(nativedt.year, nativedt.month, nativedt.day, nativedt.hour, nativedt.minute, nativedt.second, nativedt.microsecond, server_tzinfo).astimezone(local_tzinfo)
     # what type of object is this?
     nativedt_class = dtclass(nativedt)
     if nativedt == None:
@@ -305,9 +310,6 @@ def native2pref(nativedt, pref, dt_type=None, conv_func=None):
     else:
         # convert
         prefdt = convert2pref(nativedt, nativedt_class, pref)
-    # add tzinfo to datetime.datetime if requested so
-    if default_tzinfo != None and isinstance(prefdt, datetime.datetime) and prefdt.tzinfo == None:
-        prefdt = datetime.datetime(prefdt.year, prefdt.month, prefdt.day, prefdt.hour, prefdt.minute, prefdt.second, prefdt.microsecond, default_tzinfo)
     return prefdt
 
 def dtclass(dto):
