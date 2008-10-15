@@ -96,6 +96,16 @@ class MWrapper(object):
         # Remove backslash if it exists from paramstyle config.
         if '\\' in paramstyles.ESCAPE_CHARS:
             paramstyles.ESCAPE_CHARS.remove('\\')
+        # Although DB API 2.0 says nothing about BOOLEAN type it is a good
+        # idea to convert booleans in the DB result to native Python bool
+        # type. The Python bool cannot be subclassed so it is impossible
+        # to find out for example if the PgBoolean or similar class is in
+        # fact a boolean value. This feature is required for example by 
+        # XML-RPC and JSON marshallers.
+        self._convert_bool = False
+        if hasattr(driver, 'BOOLEAN'):
+            if driver.BOOLEAN != bool:
+                self._convert_bool = True
         # Check for driver specific configuration.
         try:
             self._config = __import__('config_' + drivername, globals())
@@ -388,15 +398,18 @@ class Cursor(object):
             cdtfunc = None
         # check for date types in description
         datepos = []
+        boolpos = []
         if self._datetimeo:
             for i in range(len(typelist)):
                 if typelist[i] == self._driver.DATETIME:
                     datepos.append(i)
+                elif self._mwrapper._convert_bool and typelist[i] == self._driver.BOOLEAN:
+                    boolpos.append(i)
         # loop through data to make changes
         for i in xrange(len(results)):
             set = results[i]
             # make datetime objects
-            if len(datepos) > 0:
+            if len(datepos) > 0 or len(boolpos) > 0:
                 newrow = list(set) # b/c tuple is immutable
                 for rownum in datepos:
                     ##dto = newrow[rownum] # datetime object
@@ -409,6 +422,11 @@ class Cursor(object):
                         newrow[rownum] = dbtime.native2pref(inputdt, dtpref,
                                                             dt_type, cdtfunc)
                     ##newrow[rownum] = self.__mkdatetime(newrow[rownum])
+                for rownum in boolpos:
+                    if newrow[rownum]:
+                        newrow[rownum] = True
+                    else:
+                        newrow[rownum] = False
                 set = tuple(newrow) # back to a tuple
             # db_row magic
             if self.use_db_row:
