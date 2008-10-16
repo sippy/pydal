@@ -423,6 +423,8 @@ class Cursor(object):
                                                             dt_type, cdtfunc)
                     ##newrow[rownum] = self.__mkdatetime(newrow[rownum])
                 for rownum in boolpos:
+                    if newrow[rownum] == None:
+                        continue
                     if newrow[rownum]:
                         newrow[rownum] = True
                     else:
