@@ -16,7 +16,7 @@ Requires:      new-style classes, Python 2.2 super builtin
 
 Version:       0.8
 
-Revision:      $Id: db_row.py 20 2004-09-24 03:03:30Z berryman77 $
+Revision:      $Id: db_row.py 48 2009-11-24 14:58:58Z pai1ripe $
 
 Copyright (c) 2002,2003 The OPAL Group.
 
@@ -699,7 +699,6 @@ class MetaRowBase(type):
     assert '__init__' not in cls_dict
 
     def __init__(self, fields):
-      super(row_class, self).__init__(fields)
       self.fields = field_class(fields)
 
     row_class.__init__ = __init__
