@@ -46,7 +46,7 @@ dbmod = dal.wrapdriver('MySQLdb')
 # Set local timezone. This gives side effect that all datetime.datetime 
 # objects returned as a result from the query will contain this tzinfo.
 
-dal.dbapi.dbtime.local_tzinfo = pytz.reference.Local
+dal.dbapi.dbtime.local_tzinfo = tzlocal.get_localzone()
 
 # The following line tells the dal that all datetime.datetime objects
 # returned by driver and containing no tzinfo should be treated as

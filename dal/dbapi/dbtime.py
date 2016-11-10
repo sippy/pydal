@@ -52,7 +52,9 @@ def mx2pydatetime(mxdt):
     # floating points can be tricky
     # we are rounding
     msec = int(round(decsec[0] * 1000000))
-    pytd = datetime.datetime(year, month, day, hour, minute, sec, msec, local_tzinfo)
+    pytd = datetime.datetime(year, month, day, hour, minute, sec, msec)
+    if local_tzinfo != None:
+        pytd = local_tzinfo.localize(pytd)
     return pytd
 
 def mx2pytime(mxtd):
@@ -175,7 +177,10 @@ def construct_time(dtpref, hour, minute, second):
 def construct_timestamp(dtpref, year, month, day, hour, minute, second):
     """Creates timestamp object for preferred type."""
     if dtpref == 'py':
-        return datetime.datetime(year, month, day, hour, minute, second, 0, local_tzinfo)
+        dt = datetime.datetime(year, month, day, hour, minute, second, 0)
+        if local_tzinfo != None:
+            dt = local_tzinfo.localize(dt)
+        return dt
     elif dtpref == 'mx':
         return mx.DateTime.DateTime(year, month, day, hour, minute, second)
     else:
