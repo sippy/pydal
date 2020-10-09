@@ -149,10 +149,10 @@ class MWrapper(object):
         assert dtmodname in ('py', 'mx', 'native')
         if dtmodname == 'py':
             if not dbtime.have_datetime:
-                raise Exception, 'datetime module not available.'
+                raise Exception('datetime module not available.')
         elif dtmodname == 'mx':
             if not dbtime.have_mxDateTime:
-                raise Exception, 'mx.DateTime module not available.'
+                raise Exception('mx.DateTime module not available.')
         self.__dtmod = dtmodname
 
     dtmod = property(__getDtMod, __setDtMod)
@@ -406,7 +406,7 @@ class Cursor(object):
                 elif self._mwrapper._convert_bool and typelist[i] == self._driver.BOOLEAN:
                     boolpos.append(i)
         # loop through data to make changes
-        for i in xrange(len(results)):
+        for i in range(len(results)):
             set = results[i]
             # make datetime objects
             if len(datepos) > 0 or len(boolpos) > 0:

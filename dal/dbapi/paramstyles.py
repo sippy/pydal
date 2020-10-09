@@ -256,7 +256,7 @@ def segmentize( string ):
     if current_segment != '':
         segments.append(current_segment)
     if quoted:
-        raise SegmentizeError, 'Unmatched quotes in string'
+        raise SegmentizeError('Unmatched quotes in string')
 
     return segments
 
@@ -334,7 +334,7 @@ def convert( from_paramstyle, to_paramstyle, query, params ):
     try:
         convert_function = CONVERSION_MATRIX[from_paramstyle][to_paramstyle]
     except KeyError:
-        raise NotImplementedError, 'Unsupported paramstyle conversion: %s to %s' % (from_paramstyle, to_paramstyle)
+        raise NotImplementedError('Unsupported paramstyle conversion: %s to %s' % (from_paramstyle, to_paramstyle))
 
     new_query, new_params = convert_function(query, params)
 
@@ -362,25 +362,25 @@ if __name__ == '__main__':
     }
     indent = 4
     width = 16
-    print ''
-    print '[ PARAMSTYLE TRANSLATIONS ]'
-    print ''
+    print('')
+    print('[ PARAMSTYLE TRANSLATIONS ]')
+    print('')
     for from_paramstyle in PARAMSTYLES['all']:
         query  = tests[from_paramstyle][0]
         params = tests[from_paramstyle][1]
-        print ''
-        print '%s[ %s ]' % (' ' * indent, from_paramstyle.upper())
-        print ''
+        print('')
+        print('%s[ %s ]' % (' ' * indent, from_paramstyle.upper()))
+        print('')
         label = 'query'
-        print '%s%s%s: %s' % (' ' * indent, label, '.' * (width + indent - len(label)), query)
+        print('%s%s%s: %s' % (' ' * indent, label, '.' * (width + indent - len(label)), query))
         label = 'paramstyle'
-        print '%s%s%s: %s' % (' ' * indent, label, '.' * (width + indent - len(label)), from_paramstyle)
-        print ''
+        print('%s%s%s: %s' % (' ' * indent, label, '.' * (width + indent - len(label)), from_paramstyle))
+        print('')
         for to_paramstyle in PARAMSTYLES['all']:
             converted_query, converted_params = convert(from_paramstyle, to_paramstyle, query, params)
             label = '%s_query' % (to_paramstyle)
-            print '%s%s%s: %s' % (' ' * indent * 2, label, '.' * (width - len(label)), converted_query)
+            print('%s%s%s: %s' % (' ' * indent * 2, label, '.' * (width - len(label)), converted_query))
             label = '%s_params' % (to_paramstyle)
-            print '%s%s%s: %s' % (' ' * indent * 2, label, '.' * (width - len(label)), converted_params)
-        print ''
+            print('%s%s%s: %s' % (' ' * indent * 2, label, '.' * (width - len(label)), converted_params))
+        print('')
 

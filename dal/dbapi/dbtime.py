@@ -100,7 +100,7 @@ def mx2pydt(mxdt):
         else:   
             return mx2pydtdelta(mxdt)
     else:
-        raise Exception, 'Not a mx datetime type.'
+        raise Exception('Not a mx datetime type.')
 
 # Python datetime to mx.DateTime conversion functions
 
@@ -150,7 +150,7 @@ def py2mxdt(pydt):
     elif type(pydt) == datetime.timedelta:
         return py2mxdtdelta(pydt)
     else:
-        raise Exception, 'Not a Python datetime type.'
+        raise Exception('Not a Python datetime type.')
 
 # Date and Time constructors
 
@@ -162,7 +162,7 @@ def construct_date(dtpref, year, month, day):
         return mx.DateTime.Date(year, month, day)
     else:
         # what exception should be raised here?
-        raise Exception, 'Improper DATETIME set.'
+        raise Exception('Improper DATETIME set.')
 
 def construct_time(dtpref, hour, minute, second):
     """Creates time object for preferred type."""
@@ -172,7 +172,7 @@ def construct_time(dtpref, hour, minute, second):
         return mx.DateTime.Time(hour, minute, second)
     else:
         # what exception should be raised here?
-        raise Exception, 'Improper DATETIME set.'
+        raise Exception('Improper DATETIME set.')
 
 def construct_timestamp(dtpref, year, month, day, hour, minute, second):
     """Creates timestamp object for preferred type."""
@@ -185,7 +185,7 @@ def construct_timestamp(dtpref, year, month, day, hour, minute, second):
         return mx.DateTime.DateTime(year, month, day, hour, minute, second)
     else:
         # what exception should be raised here?
-        raise Exception, 'Improper DATETIME set.'
+        raise Exception('Improper DATETIME set.')
 
 def construct_datefromticks(dtpref, ticks):
     """Creates date object for preferred type and ticks."""
@@ -195,7 +195,7 @@ def construct_datefromticks(dtpref, ticks):
         return mx.DateTime.DateFromTicks(ticks)
     else:
         # what exception should be raised here?
-        raise Exception, 'Improper DATETIME set.'
+        raise Exception('Improper DATETIME set.')
 
 def construct_timefromticks(dtpref, ticks):
     """Creates time object for preferred type and ticks."""
@@ -205,7 +205,7 @@ def construct_timefromticks(dtpref, ticks):
         return mx.DateTime.TimeFromTicks(ticks)
     else:
         # what exception should be raised here?
-        raise Exception, 'Improper DATETIME set.'
+        raise Exception('Improper DATETIME set.')
 
 def construct_timestampfromticks(dtpref, ticks):
     """Creates timestamp object for preferred type and ticks."""
@@ -215,7 +215,7 @@ def construct_timestampfromticks(dtpref, ticks):
         return mx.DateTime.localtime(ticks)
     else:
         # what exception should be raised here?
-        raise Exception, 'Improper DATETIME set.'
+        raise Exception('Improper DATETIME set.')
 
 # Other functions
 
@@ -255,7 +255,7 @@ def dtsubnative(dtpref, dbmod, params):
                 # not a datetime field
                 pass
         else:
-            raise ValueError, 'dbpref value not known.'
+            raise ValueError('dbpref value not known.')
         return nparam
 
     def convert_dparams(dparams):
@@ -267,13 +267,13 @@ def dtsubnative(dtpref, dbmod, params):
     if type(params) == dict:
         params = convert_dparams(params)
     elif type(params) == list:
-        for key in xrange(len(params)):
+        for key in range(len(params)):
             if type(params[key]) == dict:
                 params[key] = convert_dparams(params[key])
             else:
                 params[key] = convertdt(params[key])
     else:
-        raise ValueError, 'params should be list or dict.'
+        raise ValueError('params should be list or dict.')
     return params
 
 def native2pref(nativedt, pref, dt_type=None, conv_func=None):
@@ -288,7 +288,7 @@ def native2pref(nativedt, pref, dt_type=None, conv_func=None):
         elif dto_class == 'mx' and pref == 'py':
             return mx2pydt(dto)
         else:
-            raise Exception, 'unknown dto_class/pref combination'
+            raise Exception('unknown dto_class/pref combination')
     if isinstance(nativedt, datetime.datetime) and nativedt.tzinfo == None and server_tzinfo != None and local_tzinfo != None:
         nativedt = datetime.datetime(nativedt.year, nativedt.month, nativedt.day, nativedt.hour, nativedt.minute, nativedt.second, nativedt.microsecond, server_tzinfo).astimezone(local_tzinfo)
     # what type of object is this?
@@ -433,5 +433,5 @@ def main():
     assert pydtd.microseconds == mxdtd_msec
 
 if __name__ == '__main__':
-    for i in xrange(1000):
+    for i in range(1000):
         main()
