@@ -1,4 +1,4 @@
-import MySQLdb
+import MySQLdb # pylint: disable=import-error
 import datetime
 import math
 

@@ -1,4 +1,4 @@
-import cx_Oracle
+import cx_Oracle # pylint: disable=import-error
 import datetime
 
 def convertdt(moddt, field_desc, pref=None):
