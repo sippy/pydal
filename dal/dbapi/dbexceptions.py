@@ -3,7 +3,7 @@
 
 class Warning:
     pass
-class Error:
+class Error(Exception):
     pass
 class InterfaceError(Error):
     pass
