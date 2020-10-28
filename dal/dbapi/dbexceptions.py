@@ -33,7 +33,7 @@ _dbapi_exceptions = { 'Warning'             : Warning,
                       'ProgrammingError'    : ProgrammingError,
                       'NotSupportedError'   : NotSupportedError }
 
-__all__ = _dbapi_exceptions.keys()
+__all__ = list(_dbapi_exceptions.keys())
 
 def _setExceptions(wrapper):
     driver = wrapper._driver

@@ -4,7 +4,7 @@ setup(
     version = "0.2",
     packages = find_packages(),
     scripts = [],
-    zip_safe = True,
+    zip_safe = False,
 
     # metadata for upload to PyPI
     author = "Randall Smith",
