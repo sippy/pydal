@@ -83,9 +83,9 @@ print cs.fetchone()[0]
 
 __revision__ = 0.1
 
-import .dbapi.dbtime
-import .dbapi.dbexceptions
-import .dbapi.paramstyles
+import dal.dbapi.dbtime as dbtime
+import dal.dbapi.dbexceptions as dbexceptions
+import dal.dbapi.paramstyles as paramstyles
 
 class MWrapper(object):
     """Wraps DBAPI2 driver."""
@@ -162,7 +162,7 @@ class MWrapper(object):
 
     def __setUseDbRow(self, use_db_row):
         if use_db_row:
-            import db_row
+            import dal.dbapi.db_row as db_row
             globals()['db_row'] = db_row
         self.__use_db_row = use_db_row
 
@@ -265,7 +265,7 @@ class Cursor(object):
     def __setDbRow(self, use_db_row):
         """Set value of use_db_row for cursor."""
         if use_db_row:
-            import db_row
+            import dal.dbapi.db_row as db_row
             globals()['db_row'] = db_row
         self.__use_db_row = use_db_row
 
@@ -390,6 +390,7 @@ class Cursor(object):
         typelist = [descitem[1] for descitem in desc]
         # initialize metarow
         if self.use_db_row:
+            import dal.dbapi.db_row as db_row
             metarow = db_row.IMetaRow(desc)
         # Do we have a custom datetime conversion function?
         if hasattr(self._mwrapper._config, 'convertdt'):
