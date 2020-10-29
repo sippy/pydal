@@ -83,9 +83,9 @@ print cs.fetchone()[0]
 
 __revision__ = 0.1
 
-import dal.dbapi.dbtime
-import dal.dbapi.dbexceptions
-import dal.dbapi.paramstyles
+import .dbapi.dbtime
+import .dbapi.dbexceptions
+import .dbapi.paramstyles
 
 class MWrapper(object):
     """Wraps DBAPI2 driver."""
