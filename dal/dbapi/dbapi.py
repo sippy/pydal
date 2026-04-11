@@ -83,9 +83,12 @@ print cs.fetchone()[0]
 
 __revision__ = 0.1
 
+from typing import List
+
 import dal.dbapi.dbtime as dbtime
 import dal.dbapi.dbexceptions as dbexceptions
 import dal.dbapi.paramstyles as paramstyles
+from dal.dbapi.db_row import IRow
 
 class MWrapper(object):
     """Wraps DBAPI2 driver."""
@@ -107,8 +110,9 @@ class MWrapper(object):
             if driver.BOOLEAN != bool:
                 self._convert_bool = True
         # Check for driver specific configuration.
+        self.cursor_params_dict = {}
         try:
-            self._config = __import__('config_' + drivername, globals())
+            self._config = __import__('dal.dbapi.config_' + drivername, globals(), fromlist = [ '' ])
             # Run init1 in config.
             if hasattr(self._config, 'init1'):
                 self._config.init1(self)
@@ -117,6 +121,8 @@ class MWrapper(object):
                 paramstyles.ESCAPE_CHARS.extend(self._config.escape_chars)
             if hasattr(self._config, 'quote_chars'):
                 paramstyles.QUOTE_CHARS.extend(self._config.quote_chars)
+            if hasattr(self._config, 'cursor_params_dict'):
+                self.cursor_params_dict = self._config.cursor_params_dict
         except ImportError:
             self._config = False
         self.__use_db_row = False # default
@@ -249,7 +255,7 @@ class Cursor(object):
         self._mwrapper = wrapper_cn._mwrapper
         self._driver = self._mwrapper._driver
         self._drivername = self._mwrapper._drivername
-        self._native_cs = native_cn.cursor()
+        self._native_cs = native_cn.cursor(**self._mwrapper.cursor_params_dict)
         # arraysize should initialize at 1
         self._native_cs.arraysize = 1
         self._siface = False # This will probably go away.
@@ -326,7 +332,7 @@ class Cursor(object):
                 newparams.append(newpset)
             return self._native_cs.executemany(newquery, newparams)
 
-    def fetchone(self):
+    def fetchone(self) -> IRow:
         """Like DBAPI2."""
         native_cs = self._native_cs
         result = native_cs.fetchone()
@@ -340,7 +346,7 @@ class Cursor(object):
             new_result = None
         return new_result
 
-    def fetchmany(self, size=None):
+    def fetchmany(self, size=None) -> List[IRow]:
         """Like DBAPI2."""
         native_cs = self._native_cs
         if size == None:
@@ -359,7 +365,7 @@ class Cursor(object):
     def close(self):
         return self._native_cs.close()
 
-    def fetchall(self):
+    def fetchall(self) -> List[IRow]:
         """Like DBAPI2."""
         native_cs = self._native_cs
         results = native_cs.fetchall()
@@ -388,6 +394,8 @@ class Cursor(object):
             results = list(results)
         desc = self._native_cs.description
         typelist = [descitem[1] for descitem in desc]
+        if hasattr(self._mwrapper._config, 'convert_desc'):
+            desc = self._mwrapper._config.convert_desc(desc)
         # initialize metarow
         if self.use_db_row:
             import dal.dbapi.db_row as db_row
@@ -443,7 +451,7 @@ class Cursor(object):
         params = dbtime.dtsubnative(self._mwrapper.dtmod, self._driver, params)
         pstyle1 = self.paramstyle
         pstyle2 = self._driver.paramstyle
-        ##print pstyle1, pstyle2
+        ##print(pstyle1, pstyle2)
         return paramstyles.convert(pstyle1, pstyle2, query, params)
 
 # public module functions ****************************************

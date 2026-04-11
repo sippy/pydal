@@ -16,7 +16,7 @@ Requires:      new-style classes, Python 2.2 super builtin
 
 Version:       0.8
 
-Revision:      $Id: db_row.py 48 2009-11-24 14:58:58Z pai1ripe $
+Revision:      $Id: db_row.py,v 1.1 2021/02/04 21:04:21 ssp-root Exp ssp-root $
 
 Copyright (c) 2002,2003 The OPAL Group.
 
@@ -117,31 +117,31 @@ provide the best of all possible worlds.  Here is an example:
   r=R( (1,2,3) )
 
   # Demonstrate all three accessor types
-  print r['a'], r[1], r.fields.c
+  print(r['a'], r[1], r.fields.c)
   > 1 2 3
 
   # Demonstrate case-insensitive operation
-  print r['a'], r['A']
+  print(r['a'], r['A'])
   > 1 1
 
   # Return the keys (column names)
-  print r.keys()
+  print(r.keys())
   > ('a', 'b', 'c')
 
   # Return the values
-  print r.values()
+  print(r.values())
   > (1, 2, 3)
 
   # Return a list of keys and values
-  print r.items()
+  print(r.items())
   > (('a', 1), ('b', 2), ('c', 3))
 
   # Return a dictionary of the keys and values
-  print r.dict()
+  print(r.dict())
   > {'a': 1, 'c': 3, 'b': 2}
 
   # Demonstrate slicing behavior
-  print r[1:3]
+  print(r[1:3])
   > (2, 3)
 
 This solution uses some new Python 2.2 features and ends up allocating only
@@ -159,7 +159,7 @@ Here is how you could use these objects:
   # Build the rows from the row class and each tuple returned from the cursor
   results = [ R(row) for row in cursor.fetchall() ]
 
-  print results[1].fields.b, results[2].fields.B, results[3]['b'], results[2][1]
+  print(results[1].fields.b, results[2].fields.B, results[3]['b'], results[2][1])
 
 Open implementation issues:
 
@@ -231,6 +231,8 @@ Changes from version 0.5 -> 0.6:
     function.  I suspect it was a left-over from past debugging that was
     not completely removed.
 '''
+
+import six
 
 __all__ = ['MetaFields', 'IMetaFields',
            'MetaRow',    'IMetaRow',
@@ -459,6 +461,7 @@ except ImportError:
       super(IFieldsBase, self).__setattr__(key.lower(),None)
 
 
+@six.add_metaclass(MetaFields)
 class Fields(FieldsBase):
   '''Fields:
 
@@ -470,10 +473,9 @@ class Fields(FieldsBase):
      inheriting from the IFields base-class.
   '''
 
-  __metaclass__ = MetaFields
   __slots__ = ()
 
-
+@six.add_metaclass(IMetaFields)
 class IFields(IFieldsBase):
   '''IFields:
 
@@ -485,7 +487,6 @@ class IFields(IFieldsBase):
      inheriting from the Fields base-class.
   '''
 
-  __metaclass__ = IMetaFields
   __slots__ = ()
 
 
@@ -622,7 +623,7 @@ class Row(RowBase):
 
   def items(self):
     '''r.items() -> tuple of r's (field, value) pairs, as 2-tuples'''
-    return zip(self.keys(),self.fields)
+    return list(zip(list(self.keys()),self.fields))
 
   def get(self, key, default=None):
     if not isinstance(key, str):
@@ -662,7 +663,7 @@ class IRow(Row):
   def has_key(self, key):
     if isinstance(key, str):
       key = key.lower()
-    return super(IRow, self).has_key(key)
+    return key in super(IRow, self)
 
 
 class MetaRowBase(type):
@@ -778,9 +779,9 @@ class RowList(list):
 
 class NullRow(type(Nothing)):
   __slots__ = ('driver','row_class','descr')
-  driver = property(lambda self: self.row_class.driver)
-  descr  = property(lambda self: self.row_class.field_descriptors)
   def __new__(self):
+    self.driver = property(lambda self: self.row_class.driver)
+    self.descr  = property(lambda self: self.row_class.field_descriptors)
     return object.__new__(self)
   def __init__(self, row_class = None):
     self.row_class = row_class
@@ -788,7 +789,7 @@ class NullRow(type(Nothing)):
     return 0
   def __ne__(self, other):
     return 1
-  def __nonzero__(self):
+  def __bool__(self):
     return 0
 
 
@@ -801,21 +802,21 @@ def test(cls):
   assert d['c']==d[2]==d.fields.c==d.fields[2]==3
 
   assert len(d) == 3
-  assert d.has_key('a')
-  assert d.has_key('B')
-  assert d.has_key('c')
+  assert 'a' in d
+  assert 'B' in d
+  assert 'c' in d
   assert 'd' not in d
   assert 1 in d
   assert 2 in d
   assert 3 in d
   assert 4 not in d
-  assert not d.has_key(4)
-  assert not d.has_key('d')
+  assert 4 not in d
+  assert 'd' not in d
   assert d[-1] == 3
   assert d[1:3] == (2,3)
 
-  assert d.keys() == ('a','B','c')
-  assert d.items() == [('a', 1), ('B', 2), ('c', 3)]
+  assert list(d.keys()) == ('a','B','c')
+  assert list(d.items()) == [('a', 1), ('B', 2), ('c', 3)]
   assert d.dict()  == {'a': 1, 'c': 3, 'B': 2}
   assert d.copy() == d
   assert d == d.copy()
@@ -873,14 +874,14 @@ def test_insensitive(cls):
   assert d['b']==d['B']==d[1]==d.fields.B==d.fields.b==d.fields[1]==2
   assert d['c']==d['C']==d[2]==d.fields.C==d.fields.c==d.fields[2]==3
 
-  assert d.has_key('a')
-  assert d.has_key('A')
-  assert d.has_key('b')
-  assert d.has_key('B')
-  assert d.has_key('c')
-  assert d.has_key('C')
-  assert not d.has_key('d')
-  assert not d.has_key('D')
+  assert 'a' in d
+  assert 'A' in d
+  assert 'b' in d
+  assert 'B' in d
+  assert 'c' in d
+  assert 'C' in d
+  assert 'd' not in d
+  assert 'D' not in d
 
   assert 1 in d
   assert 2 in d

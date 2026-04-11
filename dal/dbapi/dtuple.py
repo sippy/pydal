@@ -48,7 +48,7 @@ class TupleDescriptor:
     """
     self.desc = tuple(desc)
     ### validate the names?
-    self.names = map(lambda x: x[0], desc)
+    self.names = [x[0] for x in desc]
     self.namemap = { }
     for i in range(len(self.names)):
       self.namemap[self.names[i]] = i
@@ -114,7 +114,7 @@ class DatabaseTuple:
     list specifying the data elements.
     """
     if len(desc) != len(data):
-      raise ValueError  # descriptor does not seem to describe tuple
+      raise ValueError("descriptor does not seem to describe tuple")
     if type(desc) == type(()) or type(desc) == type([]):
       desc = TupleDescriptor(desc)
     self.__dict__['_desc_'] = desc
@@ -183,7 +183,7 @@ class DatabaseTuple:
   
   def _items_(self):
     "Simulate mapping's methods"
-    return self.asMapping().items()
+    return list(self.asMapping().items())
   
   def _count_(self, item):
     "Simulate list's methods"
@@ -208,13 +208,13 @@ class DatabaseTuple:
         return self._count_
       if name == 'index':
         return self._index_
-      raise AttributeError
+      raise AttributeError(f"wrong name: {name}")
     return self._data_[self._desc_.namemap[name]]
     
   def asMapping(self):
     'Return the "tuple" as a real mapping'
     value = { }
-    for name, idx in self._desc_.namemap.items():
+    for name, idx in list(self._desc_.namemap.items()):
       value[name] = self._data_[idx]
     return value
     
@@ -224,4 +224,4 @@ class DatabaseTuple:
 
   def asList(self):
     'Return the "list" as a real mapping'
-    return map(None, self._data_)
+    return list(self._data_)

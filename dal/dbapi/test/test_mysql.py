@@ -139,7 +139,7 @@ def main():
     cs.execute(query, params)
     #cs.execute(query)
     result = cs.fetchall()
-    print result
+    print(result)
 
 
 if __name__ == '__main__':

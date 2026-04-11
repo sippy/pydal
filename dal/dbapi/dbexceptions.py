@@ -1,7 +1,7 @@
 # Thanks to Kevin Jacob's 'Virtual Exceptions'
 # http://mail.python.org/pipermail/db-sig/2003-April/003345.html
 
-class Warning:
+class Warning(RuntimeWarning):
     pass
 class Error(Exception):
     pass
@@ -43,4 +43,5 @@ def _setExceptions(wrapper):
 #        if (not StandardError in sub_exception.mro()):
 #            sub_exception.__bases__ += (StandardError, )
         if (not dbapi_exception in sub_exception.mro()):
-            sub_exception.__bases__ += (dbapi_exception,)
+            try: sub_exception.__bases__ += (dbapi_exception,)
+            except TypeError: pass
