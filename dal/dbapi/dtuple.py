@@ -202,7 +202,7 @@ class DatabaseTuple:
         return self._items_
       if name == 'values':
         return self.asList
-      if name == 'has_key':
+      if name == '__contains__':
         return self._has_key_
       if name == 'count':
         return self._count_

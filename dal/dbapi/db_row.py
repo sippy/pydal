@@ -240,8 +240,6 @@ __all__ = ['MetaFields', 'IMetaFields',
            'Row',        'IRow',
            'FieldDescriptor']
 
-FORCE_PURE_PYTHON = 0
-
 try:
   Nothing
 except NameError:
@@ -324,9 +322,6 @@ class IMetaFields(MetaFields):
 
 
 try:
-  if FORCE_PURE_PYTHON:
-    raise ImportError
-
   import db_rowc
   FieldsBase  = db_rowc.abstract_fields
   IFieldsBase = db_rowc.abstract_ifields
@@ -491,9 +486,6 @@ class IFields(IFieldsBase):
 
 
 try:
-  if FORCE_PURE_PYTHON:
-    raise ImportError
-
   import db_rowc
   RowBase = db_rowc.abstract_row
 
@@ -508,6 +500,7 @@ except ImportError:
     '''
 
     __slots__ = ('fields',)
+    fields: tuple
 
     def __getitem__(self, key):
       if type(key) is str:
@@ -633,8 +626,8 @@ class Row(RowBase):
     except KeyError:
       return default
 
-  def has_key(self, key):
-    '''r.has_key(k) -> 1 if r has field k, else 0'''
+  def __contains__(self, key):
+    '''r.__contains__(k) -> 1 if r has field k, else 0'''
     return key in type(self.fields).__fieldnames__
 
   def dict(self):
@@ -660,10 +653,10 @@ class IRow(Row):
 
   __slots__ = ()
 
-  def has_key(self, key):
+  def __contains__(self, key):
     if isinstance(key, str):
       key = key.lower()
-    return key in super(IRow, self)
+    return key in super(IRow, self).__contains__(key)
 
 
 class MetaRowBase(type):
@@ -790,7 +783,7 @@ class NullRow(type(Nothing)):
   def __ne__(self, other):
     return 1
   def __bool__(self):
-    return 0
+    return False
 
 
 def test(cls):
