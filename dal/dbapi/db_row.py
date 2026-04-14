@@ -758,7 +758,7 @@ class FieldDescriptor(Fields):
     elif not isinstance(desc, FieldDescriptor):
       desc = (desc,)+(None,)*6
 
-    super(FieldDescriptor,cls).__init__(desc)
+    super(FieldDescriptor, self).__init__(desc)
 
   def __str__(self):
     fields = type(self).__fields__
