@@ -656,7 +656,7 @@ class IRow(Row):
   def __contains__(self, key):
     if isinstance(key, str):
       key = key.lower()
-    return key in super(IRow, self).__contains__(key)
+    return super(IRow, self).__contains__(key)
 
 
 class MetaRowBase(type):
